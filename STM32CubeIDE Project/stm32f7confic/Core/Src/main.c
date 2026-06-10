@@ -38,6 +38,7 @@
 //#define FUNC_BLINK_TEST
 //#define FUNC_EXTIMCP_TEST
 //#define FUNC_SPI2_LOOPBACK_TEST
+//#define FUNC_SPI2_REG_TEST
 
 /* USER CODE END PD */
 
@@ -511,6 +512,37 @@ void StartDefaultTask(void *argument)
     if (rx == tx)
     {
         HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // LED OK
+    }
+#endif
+
+#ifdef FUNC_SPI2_REG_TEST
+    uint8_t tx[3];
+    uint8_t rx[3];
+
+    // WRITE simulation
+    tx[0] = 0x02;   // WRITE instruction
+    tx[1] = 0x2A;   // Address
+    tx[2] = 0x55;   // Data
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi2, tx, rx, 3, 100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+
+    osDelay(10);
+
+    // READ simulation
+    tx[0] = 0x03;   // READ instruction
+    tx[1] = 0x2A;   // Address
+    tx[2] = 0x00;   // Dummy
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi2, tx, rx, 3, 100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+
+    // Real validation
+    if (rx[0] == tx[0] && rx[1] == tx[1] && rx[2] == tx[2])
+    {
+        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // SPI OK
     }
 #endif
 
