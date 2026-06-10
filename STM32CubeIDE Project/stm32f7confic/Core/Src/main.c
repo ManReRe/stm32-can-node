@@ -34,8 +34,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define FUNC_TEST
-#define FUNC_EXTI_MCP
+#define CONF_LED_PIN
+//#define FUNC_BLINK_TEST
+#define FUNC_EXTIMCP_TEST
 
 /* USER CODE END PD */
 
@@ -147,7 +148,7 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef FUNC_TEST
+#ifdef CONF_LED_PIN
   __HAL_RCC_GPIOI_CLK_ENABLE();
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -466,6 +467,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_5)
+    {
+    	HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+    }
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -481,10 +490,16 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-#ifdef FUNC_TEST
+
+#ifdef FUNC_BLINK_TEST
 	HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
 #endif
-    osDelay(500);
+
+#ifdef FUNC_EXTIMCP_TEST
+	EXTI->SWIER |= EXTI_SWIER_SWIER5;   // Simulates INT on PC5
+#endif
+
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
