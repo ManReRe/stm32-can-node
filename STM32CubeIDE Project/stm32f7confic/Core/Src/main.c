@@ -36,7 +36,8 @@
 
 #define CONF_LED_PIN
 //#define FUNC_BLINK_TEST
-#define FUNC_EXTIMCP_TEST
+//#define FUNC_EXTIMCP_TEST
+//#define FUNC_SPI2_LOOPBACK_TEST
 
 /* USER CODE END PD */
 
@@ -497,6 +498,20 @@ void StartDefaultTask(void *argument)
 
 #ifdef FUNC_EXTIMCP_TEST
 	EXTI->SWIER |= EXTI_SWIER_SWIER5;   // Simulates INT on PC5
+#endif
+
+#ifdef FUNC_SPI2_LOOPBACK_TEST
+    uint8_t tx = 0xA5;
+    uint8_t rx = 0;
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); // CS LOW
+    HAL_SPI_TransmitReceive(&hspi2, &tx, &rx, 1, 100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);   // CS HIGH
+
+    if (rx == tx)
+    {
+        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // LED OK
+    }
 #endif
 
     osDelay(1000);
