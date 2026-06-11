@@ -6,6 +6,8 @@ STM32CubeIDE Project/**/Release/
 # Generated project metadata and intermediate files
 STM32CubeIDE Project/**/.settings/
 STM32CubeIDE Project/stm32f7confic/.settings/*
+STM32CubeIDE Project/stm32f7confic/.cproject
+STM32CubeIDE Project/stm32f7confic/.project
 
 # Generated object and binary files
 *.o
