@@ -33,6 +33,7 @@
 /* USER CODE END FirstSection */
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_driver_sd.h"
+#include "stm32f7xx_hal_sd.h"
 
 /* Extern variables ---------------------------------------------------------*/
 

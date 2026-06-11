@@ -23,6 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "test_functions.h"
+#include "lvgl.h"
+#include "lv_port_disp.h"
+#include "lv_port_indev.h"
 
 /* USER CODE END Includes */
 
@@ -35,11 +39,6 @@
 /* USER CODE BEGIN PD */
 
 #define CONF_LED_PIN
-//#define FUNC_BLINK_TEST
-//#define FUNC_EXTIMCP_TEST
-//#define FUNC_SPI2_LOOPBACK_TEST
-//#define FUNC_SPI2_REG_TEST
-//#define FUNC_MCP2515_RESET_TEST
 
 /* USER CODE END PD */
 
@@ -87,6 +86,9 @@ const osThreadAttr_t SD_Task_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+
+/* Place LVGL framebuffer pointer here */
+uint16_t *lv_framebuffer = (uint16_t*)0xC0000000;
 
 /* USER CODE END PV */
 
@@ -490,78 +492,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+
+
   /* Infinite loop */
   for(;;)
   {
-
-#ifdef FUNC_BLINK_TEST
-	HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
-#endif
-
-#ifdef FUNC_EXTIMCP_TEST
-	EXTI->SWIER |= EXTI_SWIER_SWIER5;   // Simulates INT on PC5
-#endif
-
-#ifdef FUNC_SPI2_LOOPBACK_TEST
-    uint8_t tx = 0xA5;
-    uint8_t rx = 0;
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); // CS LOW
-    HAL_SPI_TransmitReceive(&hspi2, &tx, &rx, 1, 100);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);   // CS HIGH
-
-    if (rx == tx)
-    {
-        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // LED OK
-    }
-#endif
-
-#ifdef FUNC_SPI2_REG_TEST
-    uint8_t tx[3];
-    uint8_t rx[3];
-
-    // WRITE simulation
-    tx[0] = 0x02;   // WRITE instruction
-    tx[1] = 0x2A;   // Address
-    tx[2] = 0x55;   // Data
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_SPI_TransmitReceive(&hspi2, tx, rx, 3, 100);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-
-    osDelay(10);
-
-    // READ simulation
-    tx[0] = 0x03;   // READ instruction
-    tx[1] = 0x2A;   // Address
-    tx[2] = 0x00;   // Dummy
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_SPI_TransmitReceive(&hspi2, tx, rx, 3, 100);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-
-    // Real validation
-    if (rx[0] == tx[0] && rx[1] == tx[1] && rx[2] == tx[2])
-    {
-        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // SPI OK
-    }
-#endif
-
-#ifdef FUNC_MCP2515_RESET_TEST
-    uint8_t cmd = 0xC0; // RESET
-    uint8_t rx  = 0;
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_SPI_TransmitReceive(&hspi2, &cmd, &rx, 1, 100);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-
-    if (rx == cmd) {
-        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // SPI OK
-    }
-
-    osDelay(500);
-#endif
-
+    Tests_Init();
     osDelay(1000);
   }
   /* USER CODE END 5 */
@@ -577,10 +513,27 @@ void StartDefaultTask(void *argument)
 void StartTask02(void *argument)
 {
   /* USER CODE BEGIN StartTask02 */
+  
+  /* Initialize LVGL core */
+  lv_init();
+
+  /* Initialize display and touch drivers */
+  lv_port_disp_init();
+  lv_port_indev_init();
+
+  /* Create a test button */
+  lv_obj_t *btn = lv_btn_create(lv_scr_act());
+  lv_obj_set_size(btn, 120, 50);
+  lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+
+  lv_obj_t *label = lv_label_create(btn);
+  lv_label_set_text(label, "Hello Manuel");
+  lv_obj_center(label);
+
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(5);
   }
   /* USER CODE END StartTask02 */
 }
