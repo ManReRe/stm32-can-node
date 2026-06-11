@@ -39,6 +39,7 @@
 //#define FUNC_EXTIMCP_TEST
 //#define FUNC_SPI2_LOOPBACK_TEST
 //#define FUNC_SPI2_REG_TEST
+//#define FUNC_MCP2515_RESET_TEST
 
 /* USER CODE END PD */
 
@@ -544,6 +545,21 @@ void StartDefaultTask(void *argument)
     {
         HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // SPI OK
     }
+#endif
+
+#ifdef FUNC_MCP2515_RESET_TEST
+    uint8_t cmd = 0xC0; // RESET
+    uint8_t rx  = 0;
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi2, &cmd, &rx, 1, 100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+
+    if (rx == cmd) {
+        HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1); // SPI OK
+    }
+
+    osDelay(500);
 #endif
 
     osDelay(1000);
